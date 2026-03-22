@@ -27,12 +27,17 @@ const app = express();
 connectDB();
 
 // CORS configuration
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173,https://zynos-main-site-testing.vercel.app')
   .split(',').map(o => o.trim());
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow exact matches from env
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow any Vercel preview/production deployment
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
