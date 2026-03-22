@@ -140,7 +140,7 @@ const createProduct = async (req, res) => {
   try {
     const {
       name, description, price, discountPrice,
-      category, brand, tags, variants, isFeatured, specifications
+      category, brand, tags, variants, isFeatured, specifications, totalStock
     } = req.body;
 
     let slug = generateSlug(name);
@@ -179,8 +179,13 @@ const createProduct = async (req, res) => {
       brand: brand || null,
       images,
       variants: parsedVariants || [],
+      // if no variants, use manually provided totalStock
+      totalStock: (!parsedVariants || parsedVariants.length === 0) && totalStock
+        ? parseInt(totalStock)
+        : undefined,
       tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
       isFeatured: isFeatured === 'true' || isFeatured === true,
+      isActive: req.body.isActive === 'false' ? false : true,
       specifications: parsedSpecs || {},
     });
 

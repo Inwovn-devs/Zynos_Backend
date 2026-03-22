@@ -40,6 +40,12 @@ const addToWishlist = async (req, res) => {
       }
     }
 
+    await wishlist.populate({
+      path: 'products',
+      select: 'name slug images price discountPrice ratings brand isActive',
+      populate: { path: 'brand', select: 'name' },
+    });
+
     res.status(200).json({ success: true, message: 'Added to wishlist', wishlist });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -58,7 +64,13 @@ const removeFromWishlist = async (req, res) => {
     wishlist.products = wishlist.products.filter(p => p.toString() !== productId);
     await wishlist.save();
 
-    res.status(200).json({ success: true, message: 'Removed from wishlist' });
+    await wishlist.populate({
+      path: 'products',
+      select: 'name slug images price discountPrice ratings brand isActive',
+      populate: { path: 'brand', select: 'name' },
+    });
+
+    res.status(200).json({ success: true, message: 'Removed from wishlist', wishlist });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
