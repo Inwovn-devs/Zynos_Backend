@@ -4,7 +4,7 @@ const { getWishlist, addToWishlist, removeFromWishlist } = require('../controlle
 const { requireAuth } = require('../middleware/auth');
 
 router.get('/', requireAuth, getWishlist);
-router.post('/add', requireAuth, addToWishlist);
+router.post('/', requireAuth, addToWishlist);
 router.delete('/:productId', requireAuth, removeFromWishlist);
 
 module.exports = router;
