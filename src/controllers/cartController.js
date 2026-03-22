@@ -85,25 +85,24 @@ const addToCart = async (req, res) => {
   }
 };
 
-// Update cart item
+// Update cart item by productId + variant
 const updateCartItem = async (req, res) => {
   try {
-    const { itemId } = req.params;
-    const { quantity } = req.body;
+    const { productId, quantity, variant } = req.body;
 
-    if (quantity < 1) {
-      return res.status(400).json({ success: false, message: 'Quantity must be at least 1' });
-    }
+    if (!productId) return res.status(400).json({ success: false, message: 'productId required' });
+    if (quantity < 1) return res.status(400).json({ success: false, message: 'Quantity must be at least 1' });
 
     const cart = await Cart.findOne({ user: req.user._id });
-    if (!cart) {
-      return res.status(404).json({ success: false, message: 'Cart not found' });
-    }
+    if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
 
-    const item = cart.items.id(itemId);
-    if (!item) {
-      return res.status(404).json({ success: false, message: 'Cart item not found' });
-    }
+    const item = cart.items.find(i => {
+      const sameProduct = i.product.toString() === productId;
+      const sameVariant = !variant || (i.variant?.size === variant?.size && i.variant?.color === variant?.color);
+      return sameProduct && sameVariant;
+    });
+
+    if (!item) return res.status(404).json({ success: false, message: 'Item not found in cart' });
 
     item.quantity = quantity;
     await cart.save();
@@ -120,17 +119,22 @@ const updateCartItem = async (req, res) => {
   }
 };
 
-// Remove from cart
+// Remove from cart by productId + variant
 const removeFromCart = async (req, res) => {
   try {
-    const { itemId } = req.params;
+    const { productId, variant } = req.body;
+
+    if (!productId) return res.status(400).json({ success: false, message: 'productId required' });
 
     const cart = await Cart.findOne({ user: req.user._id });
-    if (!cart) {
-      return res.status(404).json({ success: false, message: 'Cart not found' });
-    }
+    if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
 
-    cart.items = cart.items.filter(item => item._id.toString() !== itemId);
+    cart.items = cart.items.filter(i => {
+      const sameProduct = i.product.toString() === productId;
+      const sameVariant = !variant || (i.variant?.size === variant?.size && i.variant?.color === variant?.color);
+      return !(sameProduct && sameVariant);
+    });
+
     await cart.save();
 
     await cart.populate({

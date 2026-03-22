@@ -4,9 +4,9 @@ const { getCart, addToCart, updateCartItem, removeFromCart, clearCart } = requir
 const { requireAuth } = require('../middleware/auth');
 
 router.get('/', requireAuth, getCart);
-router.post('/add', requireAuth, addToCart);
-router.put('/item/:itemId', requireAuth, updateCartItem);
-router.delete('/item/:itemId', requireAuth, removeFromCart);
-router.delete('/clear', requireAuth, clearCart);
+router.post('/', requireAuth, addToCart);
+router.put('/', requireAuth, updateCartItem);
+router.delete('/all', requireAuth, clearCart);
+router.delete('/', requireAuth, removeFromCart);
 
 module.exports = router;
